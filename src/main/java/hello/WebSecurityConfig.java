@@ -13,41 +13,77 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		@Value("${app.ldap.url}")
 		String ldapUrl;
 		@Value("${app.ldap.port}")
-		String ldapPort;		
-		@Value("${app.ldap.base-dn}")
-		String ldapBaseDn;
-		@Value("${app.ldap.userDnPatterns}")
-		String ldapUserDnPatterns;
-		@Value("${app.ldap.groupSearchBase}")
-		String ldapGroupSearchBaseou;
-		@Value("${app.ldap.passwordAttribute}")
-		String ldapPasswordAttribute;
+		String ldapPort;	
+		
+		@Value("${app.auth.ldap.base-dn}")
+		String baseDn;
+		@Value("${app.auth.ldap.userDnPatterns}")
+		String userDnPatterns;
+		@Value("${app.auth.ldap.groupSearchBase}")
+		String groupSearchBase;
+		
+		@Value("${app.auth.ldap.groupSearchFilter}")
+		String groupSearchFilter;
+		
+		@Value("${app.auth.ldap.userSearchBase}")
+		String userSearchBase;
+		
+		
+		@Value("${app.auth.ldap.userSearchFilter}")
+		String userSearchFilter;
+		
+		@Value("${app.auth.ldap.passwordAttribute}")
+		String passwordAttribute;
 	
-	
+		@Value("${app.auth.ldap.groupRoleAttribute}")
+		String groupRoleAttribute;
+		
+		@Value("${app.auth.ldap.dgerole}")
+		String dgeRole;
+		@Value("${app.auth.ldap.coliconrole}")
+		String coliconRole;
+		@Value("${app.auth.ldap.systemrole}")
+		String systemRole;
+		
+
+		
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http
 			.authorizeRequests()
-			.antMatchers("/").permitAll()
-			.antMatchers("/*config*").authenticated().anyRequest().fullyAuthenticated()
-
+				.antMatchers("/").permitAll()
+				.antMatchers("/colicon").hasRole(coliconRole)	//"admincolicon
+				.antMatchers("/dge").hasRole(dgeRole)			//"admindge"
+				.antMatchers("/system").hasAnyRole("system","manager","developer","admin","admindge","admincolicon")	//"system"
+				.anyRequest().fullyAuthenticated()
 			.and()				
-			.formLogin();
+				.formLogin()
+			.and()
+				.logout()
+			.and()
+				.exceptionHandling().accessDeniedPage("/acessonegado");	
+		
+		
+
 	}
 
 	@Override
 	public void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth
 			.ldapAuthentication()
-				.userDnPatterns(ldapUserDnPatterns)
-				.groupSearchBase(ldapGroupSearchBaseou)
+				.groupRoleAttribute(groupRoleAttribute)
+				.rolePrefix("none")
+				.userSearchFilter(userSearchFilter)
+				.groupSearchFilter(groupSearchFilter)
+				.userDnPatterns(userDnPatterns)
+				.userSearchBase(userSearchBase)
+				.groupSearchBase(groupSearchBase)
 				.contextSource()
-				.url(ldapUrl + ":" + ldapPort + "/" + ldapBaseDn)
-					.and()
+				.url(ldapUrl + ":" + ldapPort + "/" + baseDn)
+				.and()
 				.passwordCompare()
 					.passwordEncoder(new LdapShaPasswordEncoder())
-					.passwordAttribute(ldapPasswordAttribute);
-					
+					.passwordAttribute(passwordAttribute);
 	}
 
 }
