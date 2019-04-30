@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-public class HomeController {
+public class appConfig {
 
-    @GetMapping("/")
+    @GetMapping("/appconfig")
     public String index() {
-    	String message = "Welcome to the home page!";
+    	String message = "Welcome to the APPCONFIG page!";
         return message;
     }
     
