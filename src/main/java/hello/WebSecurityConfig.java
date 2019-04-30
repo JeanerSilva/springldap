@@ -1,11 +1,15 @@
 package hello;
 
+import java.util.Collections;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.password.LdapShaPasswordEncoder;
+import org.springframework.security.ldap.DefaultSpringSecurityContextSource;
 
 @Configuration
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -85,5 +89,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 					.passwordEncoder(new LdapShaPasswordEncoder())
 					.passwordAttribute(passwordAttribute);
 	}
+	
+	   @Bean
+	    public DefaultSpringSecurityContextSource contextSource() {
+	        return  new DefaultSpringSecurityContextSource(
+	        		 Collections.singletonList(ldapUrl + ":" + ldapPort), baseDn);
+	    }
+	
 
 }
